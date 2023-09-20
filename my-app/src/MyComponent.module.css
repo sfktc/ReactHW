@@ -47,7 +47,6 @@ button {
 	grid-area: total;
 	border: 1px solid #333;
 	background-color: #4b4949;
-	color: #ffffff;
 }
 .modifiers {
 	grid-area: modif;
@@ -77,4 +76,12 @@ button {
 }
 .digits button {
 	flex: 1 0 26%;
+}
+
+.white {
+	color: #fffdfd;
+}
+
+.green {
+	color: green;
 }
