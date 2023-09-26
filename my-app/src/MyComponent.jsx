@@ -1,105 +1,108 @@
-import { useState } from 'react';
-
+import React, { useState } from 'react';
+import ButtonsContainer from './utils/ButtonContainer';
+import DisplayContainer from './utils/DisplayContainer';
 import styles from './MyComponent.module.css';
 
 export const MyComponent = () => {
+	const [display, setDisplay] = useState('');
+	const [result, setResult] = useState('');
 	const [showGreenText, setShowGreenText] = useState(false);
-	const [input, setInput] = useState('');
-	const calcBtns = [];
-	[7, 8, 9, 4, 5, 6, 1, 2, 3, 0].forEach((item) => {
-		calcBtns.push(
-			<button
-				onClick={(e) => {
-					setInput(input + e.target.value);
-				}}
-				value={item}
-				key={item}
-			>
-				{' '}
-				{item}
-			</button>,
-		);
-	});
+
+	function handleClick(e) {
+		const targetValue = e.target.name;
+		setDisplay(display + targetValue);
+		if (showGreenText) {
+			setShowGreenText(!showGreenText);
+		}
+	}
+
+	function operatorClick(operator) {
+		let lastCharacter = display.slice(-2);
+		let operatorsArray = ['+ ', '- '];
+
+		console.log(lastCharacter);
+
+		if (display === '' || operatorsArray.includes(lastCharacter)) return;
+
+		setDisplay((prevDisplay) => {
+			if (showGreenText) {
+				setShowGreenText(!showGreenText);
+			}
+			return prevDisplay + ' ' + operator + ' ';
+		});
+	}
+
+	function handleEqual() {
+		if (display.slice(-2).includes('+ ', '- ')) return;
+
+		setDisplay('');
+
+		try {
+			if (!showGreenText) {
+				setShowGreenText(!showGreenText);
+			}
+			const resultValue = calculate(display);
+			setResult(resultValue);
+		} catch (error) {
+			setDisplay('Error');
+		}
+	}
+
+	function calculate(expression) {
+		const tokens = expression.split(' ');
+		let resultValue = parseInt(tokens[0]);
+
+		for (let i = 1; i < tokens.length; i += 2) {
+			const operator = tokens[i];
+			const nextNumber = parseInt(tokens[i + 1]);
+
+			switch (operator) {
+				case '+':
+					resultValue += nextNumber;
+					break;
+				case '-':
+					resultValue -= nextNumber;
+					break;
+				case '*':
+					resultValue *= nextNumber;
+					break;
+				case '/':
+					resultValue /= nextNumber;
+					break;
+				default:
+					resultValue = 'Error';
+			}
+		}
+		return resultValue;
+	}
+
+	function clear() {
+		setDisplay('');
+		setResult('');
+	}
+
+	function backspace() {
+		setDisplay(display.slice(0, -1));
+	}
 
 	return (
-		<div className={styles.wrapper}>
-			{' '}
-			<div
-				className={`${styles.show_input} ${
-					showGreenText ? styles.green : styles.white
-				}`}
-			>
-				{input}
+		<>
+			<div className={`${styles.container}`}>
+				<div className={`${styles.calculator}`}>
+					<DisplayContainer
+						display={display}
+						result={result}
+						showGreenText={showGreenText}
+					/>
+					<ButtonsContainer
+						operatorClick={operatorClick}
+						handleClick={handleClick}
+						handleEqual={handleEqual}
+						backspace={backspace}
+						clear={clear}
+					/>
+				</div>
 			</div>
-			<div className={`${styles.digits} ${styles.flex}`}>{calcBtns}</div>
-			<div className={`${styles.modifiers} ${styles.subgrid}`}>
-				{/* delete button */}
-				<button
-					onClick={() => {
-						if (showGreenText) {
-							setShowGreenText(!showGreenText);
-						}
-						setInput(input.substr(0, input.length - 1));
-					}}
-				>
-					DEL
-				</button>
-				{/* clear all */}
-				<button
-					onClick={() => {
-						if (showGreenText) {
-							setShowGreenText(!showGreenText);
-						}
-						setInput('');
-					}}
-				>
-					C
-				</button>
-			</div>
-			<div className={`${styles.operations} ${styles.subgrid}`}>
-				{/* plus button */}
-				<button
-					onClick={(e) => {
-						if (showGreenText) {
-							setShowGreenText(!showGreenText);
-						}
-						setInput(input + e.target.value);
-					}}
-					value={'+'}
-				>
-					+
-				</button>
-
-				{/* minus btn */}
-				<button
-					onClick={(e) => {
-						if (showGreenText) {
-							setShowGreenText(!showGreenText);
-						}
-						setInput(input + e.target.value);
-					}}
-					value={'-'}
-				>
-					{' '}
-					-{' '}
-				</button>
-				{/* "=" btn */}
-				<button
-					onClick={(e) => {
-						try {
-							if (!showGreenText) {
-								setShowGreenText(!showGreenText);
-							}
-							setInput(String(eval(input)));
-						} catch (e) {
-							console.log(e);
-						}
-					}}
-					value="="
-				>
-					=
-				</button>
-			</div>
-		</div>
+		</>
 	);
 };
